@@ -4,23 +4,23 @@
 
 # Keep public classes and methods.
 -keepclassmembers class com.mopub.** { public *; }
--keep public class com.mopub.**
+-keepnames public class com.mopub.**
 -keep public class android.webkit.JavascriptInterface {}
 
 # Explicitly keep any custom event classes in any package.
--keep class * extends com.mopub.mobileads.CustomEventBanner {}
--keep class * extends com.mopub.mobileads.CustomEventInterstitial {}
+#-keep class * extends com.mopub.mobileads.CustomEventBanner {}
+#-keep class * extends com.mopub.mobileads.CustomEventInterstitial {}
 -keep class * extends com.mopub.nativeads.CustomEventNative {}
--keep class * extends com.mopub.nativeads.CustomEventRewardedAd {}
+#-keep class * extends com.mopub.nativeads.CustomEventRewardedAd {}
 
 # Keep methods that are accessed via reflection
 -keepclassmembers class ** { @com.mopub.common.util.ReflectionTarget *; }
 
 # Viewability support
 -keepclassmembers class com.integralads.avid.library.mopub.** { public *; }
--keep public class com.integralads.avid.library.mopub.**
+-keepnames public class com.integralads.avid.library.mopub.**
 -keepclassmembers class com.moat.analytics.mobile.mpub.** { public *; }
--keep public class com.moat.analytics.mobile.mpub.**
+-keepnames public class com.moat.analytics.mobile.mpub.**
 
 # Support for Android Advertiser ID.
 -keep class com.google.android.gms.common.GooglePlayServicesUtil {*;}

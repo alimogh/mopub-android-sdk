@@ -350,6 +350,9 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
         }
     }
 
+    @Override
+    public void onRepeatModeChanged(int repeatMode) { }
+
     public void seekTo(final long ms) {
         if (mExoPlayer == null) {
             return;

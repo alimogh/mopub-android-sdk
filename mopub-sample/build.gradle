@@ -12,15 +12,15 @@ project.description = '''MoPub Sample App'''
 project.version = '4.20.0'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.0'
     lintOptions { abortOnError false }
 
     defaultConfig {
         versionCode 58
         versionName version
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 27
     }
 
     buildTypes {
@@ -55,10 +55,10 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.android.support:support-v4:27.0.0'
     implementation 'com.google.android.gms:play-services-ads:11.4.2'
     implementation 'com.google.android.gms:play-services-base:11.4.2'
-    implementation 'com.android.support:recyclerview-v7:26.1.0'
+    implementation 'com.android.support:recyclerview-v7:27.0.0'
     implementation project(':mopub-sdk')
     implementation('com.mopub:libAvid-mopub:3.6.4')
     implementation 'com.moat.analytics.mobile.mpub:moat-mobile-app-kit:2.1.0'

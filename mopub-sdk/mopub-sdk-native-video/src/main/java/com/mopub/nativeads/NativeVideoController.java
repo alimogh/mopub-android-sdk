@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.LongSparseArray;
 import android.view.Surface;
 import android.view.TextureView;
 
@@ -20,6 +21,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
@@ -52,29 +54,27 @@ import com.mopub.network.TrackingRequest;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Wrapper class around the {@link ExoPlayer} to provide a nice interface into the player along
  * with some helper methods. This class is not thread safe.
  */
-public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFocusChangeListener {
+public class NativeVideoController implements Player.EventListener, OnAudioFocusChangeListener {
 
     public interface Listener {
         void onStateChanged(boolean playWhenReady, int playbackState);
         void onError(Exception e);
     }
 
-    @NonNull private final static Map<Long, NativeVideoController> sManagerMap =
-            new HashMap<Long, NativeVideoController>(4);
+    @NonNull protected final static LongSparseArray<NativeVideoController> sManagerMap =
+            new LongSparseArray<>(4);
 
-    public static final int STATE_READY = ExoPlayer.STATE_READY;
-    public static final int STATE_BUFFERING = ExoPlayer.STATE_BUFFERING;
-    public static final int STATE_IDLE = ExoPlayer.STATE_IDLE;
-    public static final int STATE_ENDED = ExoPlayer.STATE_ENDED;
-    public static final int STATE_CLEARED = ExoPlayer.STATE_ENDED + 1;
+    public static final int STATE_READY = Player.STATE_READY;
+    public static final int STATE_BUFFERING = Player.STATE_BUFFERING;
+    public static final int STATE_IDLE = Player.STATE_IDLE;
+    public static final int STATE_ENDED = Player.STATE_ENDED;
+    public static final int STATE_CLEARED = Player.STATE_ENDED + 1;
 
     public static final long RESUME_FINISHED_THRESHOLD = 750L;
 
@@ -102,7 +102,7 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
     private boolean mPlayWhenReady;
     private boolean mAudioEnabled;
     private boolean mAppAudioEnabled;
-    private int mPreviousExoPlayerState = ExoPlayer.STATE_IDLE;
+    private int mPreviousExoPlayerState = Player.STATE_IDLE;
     private boolean mExoPlayerStateStartedFromIdle = true;
 
     /**
@@ -152,7 +152,9 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
 
     @Nullable
     public static NativeVideoController remove(final long id) {
-        return sManagerMap.remove(id);
+        final NativeVideoController controller = sManagerMap.get(id);
+        sManagerMap.remove(id);
+        return controller;
     }
 
     private NativeVideoController(@NonNull final Context context,
@@ -272,7 +274,7 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
     public void prepare(@NonNull final Object owner) {
         Preconditions.checkNotNull(owner);
 
-        mOwnerRef = new WeakReference<Object>(owner);
+        mOwnerRef = new WeakReference<>(owner);
         clearExistingPlayer();
         preparePlayer();
         setExoSurface(mSurface);
@@ -320,7 +322,7 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
             mNativeVideoProgressRunnable.requestStop();
         }
 
-        if (mPreviousExoPlayerState == ExoPlayer.STATE_READY && newState == ExoPlayer.STATE_BUFFERING) {
+        if (mPreviousExoPlayerState == Player.STATE_READY && newState == Player.STATE_BUFFERING) {
             MoPubEvents.log(Event.createEventFromDetails(
                     BaseEvent.Name.DOWNLOAD_BUFFERING,
                     BaseEvent.Category.NATIVE_VIDEO,
@@ -329,8 +331,8 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
         }
 
         if (mExoPlayerStateStartedFromIdle &&
-                mPreviousExoPlayerState == ExoPlayer.STATE_BUFFERING &&
-                newState == ExoPlayer.STATE_READY) {
+                mPreviousExoPlayerState == Player.STATE_BUFFERING &&
+                newState == Player.STATE_READY) {
             MoPubEvents.log(Event.createEventFromDetails(
                     BaseEvent.Name.DOWNLOAD_VIDEO_READY,
                     BaseEvent.Category.NATIVE_VIDEO,
@@ -339,9 +341,9 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
         }
 
         mPreviousExoPlayerState = newState;
-        if (newState == ExoPlayer.STATE_READY) {
+        if (newState == Player.STATE_READY) {
             mExoPlayerStateStartedFromIdle = false;
-        } else if (newState == ExoPlayer.STATE_IDLE) {
+        } else if (newState == Player.STATE_IDLE) {
             mExoPlayerStateStartedFromIdle = true;
         }
 
@@ -387,7 +389,13 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
     }
 
     @Override
-    public void onPositionDiscontinuity() {}
+    public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) { }
+
+    @Override
+    public void onPositionDiscontinuity(int reason) { }
+
+    @Override
+    public void onSeekProcessed() { }
 
     @Override
     public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {}
@@ -652,7 +660,7 @@ public class NativeVideoController implements ExoPlayer.EventListener, OnAudioFo
                     mVastVideoConfig.getUntriggeredTrackersBefore(
                             (int) mCurrentPosition, (int) mDuration);
             if (!trackers.isEmpty()) {
-                final List<String> trackingUrls = new ArrayList<String>();
+                final List<String> trackingUrls = new ArrayList<>();
                 for (VastTracker tracker : trackers) {
                     if (tracker.isTracked()) {
                         continue;

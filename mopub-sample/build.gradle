@@ -60,8 +60,8 @@ android {
 
 dependencies {
     implementation 'com.android.support:support-v4:27.0.2'
-    implementation 'com.google.android.gms:play-services-ads:11.6.2'
-    implementation 'com.google.android.gms:play-services-base:11.6.2'
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
+    implementation 'com.google.android.gms:play-services-base:11.8.0'
     implementation 'com.android.support:recyclerview-v7:27.0.2'
     implementation project(':mopub-sdk')
     implementation('com.mopub:libAvid-mopub:3.6.4')

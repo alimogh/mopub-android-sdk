@@ -441,7 +441,7 @@ public class NativeVideoController implements Player.EventListener, OnAudioFocus
         if (mExoPlayer == null) {
             mVideoRenderer = new MediaCodecVideoRenderer(mContext,
                     MediaCodecSelector.DEFAULT, 0, mHandler, null, 10);
-            mAudioRenderer = new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT);
+            mAudioRenderer = new MediaCodecAudioRenderer(mContext, MediaCodecSelector.DEFAULT);
             final DefaultAllocator allocator = new DefaultAllocator(true, BUFFER_SEGMENT_SIZE,
                     BUFFER_SEGMENT_COUNT);
 
